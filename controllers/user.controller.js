@@ -1,6 +1,7 @@
 const { sendResponse, AppError } = require("../helpers/utils");
 const User = require("../models/User");
 const { check } = require("express-validator");
+const ObjectId = require("mongoose").Types.ObjectId;
 
 const userController = {};
 
@@ -10,10 +11,10 @@ userController.createUser = async (req, res, next) => {
   try {
     // check name is empty
     if (!info.name)
-      throw new AppError(406, "Bad request", "Field Name is required");
+      throw new AppError(406, "Bad request", "Field name is required");
     // check name is valid string
-    if (check(info.name).isString())
-      throw new AppError(400, "Field Name must be a string", "Bad request");
+    // if (check(info.name).isString())
+    //   throw new AppError(400, "Field Name must be a string", "Bad request");
 
     //check existence employee
     const existenceEmployee = await User.findOne({ name: info.name });
@@ -38,7 +39,7 @@ userController.getAllUser = async (req, res, next) => {
   const filterKeys = Object.keys(filterQuery);
   let filter = {};
   try {
-    //check not allow query
+    //query  // not alow
     if (filterKeys.length) {
       filterKeys.map((key) => {
         if (!filterQuery[key]) delete filterQuery[key];
@@ -49,7 +50,7 @@ userController.getAllUser = async (req, res, next) => {
         `Query ${filterKeys.map((e) => e)} is not allowed`
       );
     }
-    //check filter allow query
+    //query
     if (name) filter = { name: name };
 
     const users = await User.find(filter)
@@ -61,7 +62,7 @@ userController.getAllUser = async (req, res, next) => {
     const total = await User.find({ isDeleted: false }).count();
     const data = { users, total };
 
-    sendResponse(res, 200, true, data, null, "Get user success ");
+    sendResponse(res, 200, true, data, null, "Search successfully ");
   } catch (error) {
     next(error);
   }
@@ -72,20 +73,20 @@ userController.getTaskByUserId = async (req, res, next) => {
   const { id } = req.params;
 
   try {
-    const UserId = await User.findById(id).populate("task");
-    //  check existence data user?
-    if (!UserId) throw new AppError(404, "Bad Request", "Not Found Employee");
-    //  check task  user?
-    if (!UserId.task?.length)
-      sendResponse(res, 200, true, null, null, "Empty task");
+    //validate input
+    if (!ObjectId.isValid(id))
+      throw new AppError(400, "Bad request", "Invalid id");
 
-    sendResponse(res, 200, true, UserId.task, null, "Get task successfully");
+    const UserId = await User.findById(id).populate("task");
+    x;
+    if (!UserId) throw new AppError(404, "Bad Request", "Not Found Employee");
+    if (!UserId.task?.length)
+      sendResponse(res, 200, true, UserId, null, "Empty task");
+    //send res
+    sendResponse(res, 200, true, UserId, null, "Get task successfully");
   } catch (error) {
     next(error);
   }
 };
-//Update User (Assign task)
-
-//Delete User
 
 module.exports = userController;
