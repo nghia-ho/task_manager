@@ -56,8 +56,7 @@ userController.getAllUser = async (req, res, next) => {
     const users = await User.find(filter)
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
-      .limit(limit)
-      .populate("task");
+      .limit(limit);
 
     const total = await User.find({ isDeleted: false }).count();
     const data = { users, total };
