@@ -40,22 +40,26 @@ taskController.updateTask = async (req, res, next) => {
 
     //check allowance status
     const currentStatus = allowUpdate.find((e) => e === status);
-    if (!currentStatus) {
-      throw new AppError(403, "Status is not allow", "Bad request");
-    }
     //status is set done, it can’t be changed to other value except archive
     if (task.status === "done") {
-      if (currentStatus === "archive") {
-        const updated = await Task.findByIdAndUpdate(id, update, { new: true });
-        sendResponse(res, 200, true, updated, null, "update task successfully");
-      } else
+      if (currentStatus !== "archive") {
         throw new AppError(
           400,
           "Done task just store as archive status",
           "Bad request"
         );
+      } else {
+        const updated = await Task.findByIdAndUpdate(id, update, {
+          new: true,
+        });
+        sendResponse(res, 200, true, updated, null, "update task successfully");
+        return;
+      }
     }
 
+    if (!currentStatus) {
+      throw new AppError(403, "Status is not allow", "Bad request");
+    }
     //assign task
     const assignTask = task.owner?._id.toString() !== owner;
     if (assignTask && owner) {
