@@ -10,7 +10,7 @@ const taskSchema = new mongoose.Schema(
       default: "pending",
       required: true,
     },
-    owner: { type: mongoose.SchemaTypes.ObjectId, ref: "User" },
+    owner: { type: [mongoose.SchemaTypes.ObjectId], ref: "User" },
 
     isDeleted: { type: Boolean, default: false, required: true },
   },

@@ -9,7 +9,6 @@ const userSchema = new mongoose.Schema(
       enum: ["manager", "employee"],
       required: true,
     },
-    task: { type: [mongoose.SchemaTypes.ObjectId], ref: "Task" },
     isDeleted: { type: Boolean, default: false, required: true },
   },
   { timestamps: true }

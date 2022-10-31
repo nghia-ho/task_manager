@@ -13,7 +13,7 @@ userController.createUser = async (req, res, next) => {
     if (!info.name)
       throw new AppError(406, "Bad request", "Field name is required");
     // check name is valid string
-    // if (check(info.name).isString())
+    // if (!check(info.name).isString())
     //   throw new AppError(400, "Field Name must be a string", "Bad request");
 
     //check existence employee

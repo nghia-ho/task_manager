@@ -36,7 +36,6 @@ taskController.updateTask = async (req, res, next) => {
       throw new AppError(400, "Invalid ObjectId", "Bad request");
 
     let task = await Task.findById(id);
-    const user = await User.findById(owner);
 
     //check allowance status
     const currentStatus = allowUpdate.find((e) => e === status);
@@ -60,25 +59,32 @@ taskController.updateTask = async (req, res, next) => {
     if (!currentStatus) {
       throw new AppError(403, "Status is not allow", "Bad request");
     }
+
     //assign task
-    const assignTask = task.owner?._id.toString() !== owner;
+    const assignTask = task.owner[0]?._id.toString() !== owner;
+    console.log(assignTask);
+
     if (assignTask && owner) {
-      user.task.push(id);
-      await user.save();
+      task.owner.push(id);
+      await task.save();
+      //   user.task.push(id);
+      //   await user.save();
     }
 
-    //unassign task
+    // //unassign task
     if (!assignTask && owner) {
-      user?.task?.pop(id);
-      await user.save();
+      // task.owner.pop(id);
+      // await task.save();
+      //   user?.task?.pop(id);
+      //   await user.save();
       const updated = await Task.findByIdAndUpdate(
         id,
-        { ...update, owner: null },
+        { ...update, owner: [] },
         { new: true }
       );
       sendResponse(res, 200, true, updated, null, "Unassign task successfully");
     }
-    // throw new AppError(
+    // // throw new AppError(
     //   400,
     //   "Bad request",
     //   "A task may have one or no one asign to it yet"
