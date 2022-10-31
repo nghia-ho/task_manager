@@ -1,6 +1,6 @@
 const { sendResponse, AppError } = require("../helpers/utils");
 const User = require("../models/User");
-const { check } = require("express-validator");
+// const { check } = require("express-validator");
 const ObjectId = require("mongoose").Types.ObjectId;
 
 const userController = {};
