@@ -29,7 +29,7 @@ taskController.updateTask = async (req, res, next) => {
   const { id } = req.params;
   const update = req.body;
   const { status, owner } = update;
-  const allowUpdate = ["working", "review", "done", "archive"];
+  const allowUpdate = ["pending", "working", "review", "done", "archive"];
   try {
     //check invalid mongo object id
     if (!ObjectId.isValid(id))
@@ -37,6 +37,24 @@ taskController.updateTask = async (req, res, next) => {
 
     let task = await Task.findById(id);
     const user = await User.findById(owner);
+
+    //check allowance status
+    const currentStatus = allowUpdate.find((e) => e === status);
+    if (!currentStatus) {
+      throw new AppError(403, "Status is not allow", "Bad request");
+    }
+    //status is set done, it can’t be changed to other value except archive
+    if (task.status === "done") {
+      if (currentStatus === "archive") {
+        const updated = await Task.findByIdAndUpdate(id, update, { new: true });
+        sendResponse(res, 200, true, updated, null, "update task successfully");
+      } else
+        throw new AppError(
+          400,
+          "Done task just store as archive status",
+          "Bad request"
+        );
+    }
 
     //assign task
     const assignTask = task.owner?._id.toString() !== owner;
@@ -46,7 +64,7 @@ taskController.updateTask = async (req, res, next) => {
     }
 
     //unassign task
-    if (!assignTask) {
+    if (!assignTask && owner) {
       user?.task?.pop(id);
       await user.save();
       const updated = await Task.findByIdAndUpdate(
@@ -64,25 +82,6 @@ taskController.updateTask = async (req, res, next) => {
 
     //missing status
     if (!status) throw new AppError(400, "Missing status", "Bad request");
-
-    const currentStatus = allowUpdate.find((e) => e === status);
-
-    //status is set done, it can’t be changed to other value except archive
-    if (status === "done") {
-      if (currentStatus === "archive") {
-        const updated = await Task.findByIdAndUpdate(id, update, { new: true });
-        sendResponse(res, 200, true, updated, null, "update task successfully");
-      } else
-        throw new AppError(
-          400,
-          "Done task just store as archive status",
-          "Bad request"
-        );
-    }
-
-    //not allow status
-    if (!currentStatus)
-      throw new AppError(404, "Status is not allow", "Bad request");
 
     if ((currentStatus && assignTask) || (currentStatus && !owner)) {
       const updated = await Task.findByIdAndUpdate(id, update, { new: true });
