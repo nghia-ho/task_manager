@@ -76,7 +76,7 @@ userController.getTaskByUserId = async (req, res, next) => {
     if (!ObjectId.isValid(id))
       throw new AppError(400, "Bad request", "Invalid id");
 
-    const UserId = await User.findById(id).populate("task");
+    const UserId = await User.findById(id);
     if (!UserId) throw new AppError(404, "Bad Request", "Not Found Employee");
     if (!UserId.task?.length)
       sendResponse(res, 200, true, UserId, null, "Empty task");
